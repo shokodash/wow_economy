@@ -6,18 +6,21 @@ import logging
 import battlenet
 import sys
 import time
-import multiprocessing
+import locale
 import multiprocessing.pool
 import os
 import json
 import datetime
-from sqlalchemy.orm.exc import NoResultFound
+#from sqlalchemy.orm.exc import NoResultFound
 
 #logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
+default_encoding = locale.getpreferredencoding()
+
 def log(message):
     # Quick and dirty.
-    sys.stdout.write("%s: %s\n"%(time.asctime(), message))
+    #sys.stdout.write("%s: %s\n"%(time.asctime(), message))
+    print "%s: %s"%(time.asctime(), message)
 
 def GrabItemInfo(data):
     logger = logging.getLogger(__name__)
