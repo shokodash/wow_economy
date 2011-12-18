@@ -1,0 +1,12 @@
+*.class
+*.pyc
+*.pyo
+Include
+Lib
+Scripts
+*.project
+*.pydevproject
+src/auction_cache
+*.class
+*.pyc
+*.pyo
