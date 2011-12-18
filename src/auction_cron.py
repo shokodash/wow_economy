@@ -7,6 +7,7 @@ import battlenet
 import sys
 import time
 import multiprocessing
+import multiprocessing.pool
 import os
 import json
 import datetime
