@@ -11,11 +11,12 @@ import os
 import json
 import datetime
 from sqlalchemy.orm.exc import NoResultFound
-    
-logging.basicConfig(level=logging.INFO, format="%(asctime)s: %(levelname)s - %(message)s")
-logger = multiprocessing.get_logger()
+
 #logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
+def log(message):
+    # Quick and dirty.
+    sys.stdout.write("%s: %s\n"%(time.asctime(), message))
 
 def GrabItemInfo(data):
     logger = logging.getLogger(__name__)
@@ -30,13 +31,13 @@ def GrabItemInfo(data):
         sys.stdout.write("!")
         
 def HandleRealm(realm):
-    api = battlenet.BattleNetApi(logger)
+    api = battlenet.BattleNetApi(log)
     
-    logger.info("Connecting to the database...")
+    log("Connecting to the database...")
     session = models.Session()
-    logger.info("Connection successful. Parsing...")
+    log("Connection successful. Parsing...")
     
-    logger.info(" - Realm: %s"%realm)
+    log(" - Realm: %s"%realm)
     try:
         db_realm = session.query(models.Realm).filter(models.Realm.slug == realm.slug).one()
     except Exception:
@@ -44,7 +45,7 @@ def HandleRealm(realm):
         session.add(db_realm)
         session.commit()
     
-    logger.info("  - DB LastModified: %s"%time.ctime(db_realm.lastupdate))
+    log("  - DB LastModified: %s"%time.ctime(db_realm.lastupdate))
     
     for i in xrange(5):
         try:
@@ -52,15 +53,15 @@ def HandleRealm(realm):
             break
         except Exception:
             if i == 4:
-                logger.info("   - Not attempting again, returning.")
+                log("   - Not attempting again, returning.")
                 return
-            logger.info("   - Attempting again...")
+            log("   - Attempting again...")
     
     if (lastModified, auctions) == (None, None):
-        logger.info("   - Skipping auctions for realm %s"%realm)
+        log("   - Skipping auctions for realm %s"%realm)
         return
     
-    logger.info("  - LastModified: %s"%(time.ctime(lastModified / 1000)))
+    log("  - LastModified: %s"%(time.ctime(lastModified / 1000)))
     
 
     db_realm.auction_count = 0
@@ -71,7 +72,7 @@ def HandleRealm(realm):
         
         _json_path = "auction_cache/%s_%s.json"%(db_realm.slug, key)
             
-        logger.info("   - Found %s auctions for faction %s"%(len(auc), key))
+        log("   - Found %s auctions for faction %s"%(len(auc), key))
         auc_ids = set([auction_data["auc"] for auction_data in auc])
         
         if os.path.exists(_json_path): # We have the previous shit on record
@@ -79,16 +80,16 @@ def HandleRealm(realm):
                 try:
                     previous_ids = json.load(pd)
                 except ValueError:
-                    logger.info("    - Error decoding JSON document %s! Removing"%_json_path)
+                    log("    - Error decoding JSON document %s! Removing"%_json_path)
                     os.remove(_json_path)
                 
                 else:
                     new_ids = auc_ids - set(previous_ids)
-                    logger.info("    - Found %s new auctions"%len(new_ids))
+                    log("    - Found %s new auctions"%len(new_ids))
                     
                     new_item_ids = [t["item"] for t in auc if t["auc"] in new_ids]
                     if not len(new_item_ids):
-                        logger.info("     - Passing...")
+                        log("     - Passing...")
                         continue
                     query = session.query(models.Price).filter(models.Price.day==datetime.datetime.now().date()) \
                                                                    .filter(models.Price.realm==db_realm) \
@@ -102,12 +103,12 @@ def HandleRealm(realm):
                             # We got a new item yo
                             '''try:
                                 item_db = session.query(models.Item).filter(models.Item.id == auction["item"]).one()
-                                #logger.info("    - Item ID %s exists, not fetching"%auction["item"])
+                                #log("    - Item ID %s exists, not fetching"%auction["item"])
                             except Exception:
-                                logger.info("    - Item ID %s does not exist. Fetching and adding"%auction["item"])
+                                log("    - Item ID %s does not exist. Fetching and adding"%auction["item"])
                                 _item = api.get_item(auction["item"])
                                 if not _item:
-                                    logger.info("     - Cannot fetch item id %s!"%auction["item"])
+                                    log("     - Cannot fetch item id %s!"%auction["item"])
                                 else:
                                     item_db = models.Item(auction["item"], _item.name, _item.icon, _item.description,
                                                           _item.buyPrice, _item.sellPrice, _item.quality, _item.itemLevel)
@@ -142,7 +143,7 @@ def HandleRealm(realm):
                     session.commit()
         
         else:
-            logger.info("    - No previous dump found, dumping current record.")
+            log("    - No previous dump found, dumping current record.")
         
         with open(_json_path, "w") as fd:
             json.dump(list(auc_ids), fd)
@@ -150,21 +151,21 @@ def HandleRealm(realm):
     db_realm.lastupdate = lastModified / 1000
     session.add(db_realm)
     session.commit()
-    logger.info("   - Finished realm %s"%db_realm.slug)
+    log("   - Finished realm %s"%db_realm.slug)
 
 if __name__ == "__main__":
     
     if not os.path.exists("auction_cache"):
         os.mkdir("auction_cache")
 
-    logger.info("Spinning up processing pools...")
+    log("Spinning up processing pools...")
     realm_pool = multiprocessing.Pool(10)
     
-    api = battlenet.BattleNetApi(logger)
+    api = battlenet.BattleNetApi(log)
     
-    logger.info("Getting realm list...")
+    log("Getting realm list...")
     realms = api.get_realms()
-    logger.info("Retrieved %s realms, sending to the realm pool"%len(realms))
+    log("Retrieved %s realms, sending to the realm pool"%len(realms))
     
     realm_pool.map(HandleRealm, realms)
     #for realm in realms:

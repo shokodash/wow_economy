@@ -22,30 +22,30 @@ class Item(object):
         return "<Item(%s,%s,%s)>"%(self.name, self.icon, self.quality)
 
 class BattleNetApi(object):
-    def __init__(self, logger):
-        self.logger = logger
+    def __init__(self, logfunc):
+        self.logger = logfunc
         
     def get_content(self, url):
         try:
             #r = requests.get(url)
             r = urllib2.urlopen(url)
         except Exception:
-            self.logger.error("Request to %s failed. Traceback:"%url)
-            self.logger.error(traceback.format_exc())
+            self.logger("Request to %s failed. Traceback:"%url)
+            self.logger(traceback.format_exc())
             return None
         
         try:
             d = json.load(r)
         except Exception:
-            self.logger.error("Invalid json detected @ %s"%url)
-            self.logger.error("Status: %s, Final URL: %s"%(r.code, r.geturl()))
-            self.logger.error(traceback.format_exc())
+            self.logger("Invalid json detected @ %s"%url)
+            self.logger("Status: %s, Final URL: %s"%(r.code, r.geturl()))
+            self.logger(traceback.format_exc())
             return None
         
         if "status" in d:
             if d["status"] == "nok":
-                self.logger.error("WOW API failed @ %s"%url)
-                self.logger.error("Reason: %s"%(d["reason"]))
+                self.logger("WOW API failed @ %s"%url)
+                self.logger("Reason: %s"%(d["reason"]))
                 return None
         return d
     
