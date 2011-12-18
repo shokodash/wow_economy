@@ -1,0 +1,8 @@
+This is a site that tracks the average price of World of Warcraft auction items.
+The cron job pulls the auctions and processes them for the frontend.
+
+Requires:
+ - Python 2.7+
+ - SQLAlchemy
+ - A database (I use postgresql, you can use whatever, just alter the models.py connection URI)
+ - A fairly fast connection.
