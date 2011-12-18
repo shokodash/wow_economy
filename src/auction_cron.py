@@ -168,6 +168,6 @@ if __name__ == "__main__":
     realms = api.get_realms()
     log("Retrieved %s realms, sending to the realm pool"%len(realms))
     
-    realm_pool.map(HandleRealm, realms)
+    realm_pool.map(HandleRealm, realms, chunksize=10)
     #for realm in realms:
     #    HandleRealm(realm)
