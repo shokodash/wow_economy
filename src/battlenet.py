@@ -35,7 +35,7 @@ class BattleNetApi(object):
             return None
         
         try:
-            d = json.load(r)
+            d = json.loads(r.read(), encoding="utf-8")#.encode("utf-8"))
         except Exception:
             self.logger("Invalid json detected @ %s"%url)
             self.logger("Status: %s, Final URL: %s"%(r.code, r.geturl()))
