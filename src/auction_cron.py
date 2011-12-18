@@ -13,7 +13,7 @@ import datetime
 from sqlalchemy.orm.exc import NoResultFound
     
 logging.basicConfig(level=logging.INFO, format="%(asctime)s: %(levelname)s - %(message)s")
-logger = logging.getLogger("AuctionCron")
+logger = multiprocessing.get_logger()
 #logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 
@@ -158,7 +158,7 @@ if __name__ == "__main__":
         os.mkdir("auction_cache")
 
     logger.info("Spinning up processing pools...")
-    realm_pool = multiprocessing.Pool()
+    realm_pool = multiprocessing.Pool(10)
     
     api = battlenet.BattleNetApi(logger)
     
