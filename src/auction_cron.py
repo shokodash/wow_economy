@@ -20,7 +20,7 @@ default_encoding = locale.getpreferredencoding()
 def log(message):
     # Quick and dirty.
     #sys.stdout.write("%s: %s\n"%(time.asctime(), message))
-    print "%s: %s"%(time.asctime(), message)
+    print u"%s: %s"%(time.asctime(), message).encode("utf-8")
 
 def GrabItemInfo(data):
     logger = logging.getLogger(__name__)
