@@ -1,12 +1,12 @@
 from sqlalchemy import Column, String, Integer, BigInteger, DateTime, Date, ForeignKey, Enum, create_engine, func
 from sqlalchemy import schema
-from sqlalchemy.orm import relationship, backref, sessionmaker
+from sqlalchemy.orm import relationship, backref, sessionmaker, ScopedSession
 from sqlalchemy.ext.declarative import declarative_base
 
 engine = create_engine("postgresql+psycopg2://wowauction:password@localhost:5432/wow_auctions",
                        pool_size=20, isolation_level="REPEATABLE_READ")
 Base = declarative_base()
-Session = sessionmaker(bind=engine)
+Session = ScopedSession(sessionmaker(bind=engine))
 
 class Realm(Base):
     __tablename__ = "realms"
