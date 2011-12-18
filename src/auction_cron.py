@@ -62,8 +62,6 @@ def HandleRealm(realm):
         return
     
     log("  - LastModified: %s"%(time.ctime(lastModified / 1000)))
-    
-
     db_realm.auction_count = 0
             
     for key in ("alliance","horde","neutral"):
@@ -147,6 +145,8 @@ def HandleRealm(realm):
         
         with open(_json_path, "w") as fd:
             json.dump(list(auc_ids), fd)
+        
+        del auctions[key]
     
     db_realm.lastupdate = lastModified / 1000
     session.add(db_realm)
@@ -159,7 +159,7 @@ if __name__ == "__main__":
         os.mkdir("auction_cache")
 
     log("Spinning up processing pools...")
-    realm_pool = multiprocessing.Pool(10)
+    realm_pool = multiprocessing.pool.ThreadPool(5)
     
     api = battlenet.BattleNetApi(log)
     
