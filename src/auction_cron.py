@@ -157,20 +157,28 @@ def HandleRealm(realm):
                     items_that_dont_exist = item_ids - set([ o[0] for o in session.query(models.Item.id).filter(models.Item.id.in_(item_ids)).all() ])
                     
                     log("   - Found %s item that dont exist"%len(items_that_dont_exist))
+                    _c = len(items_that_dont_exist)
+                    _o = 0
+                    _tp = 0
                     for item_id in items_that_dont_exist:
+                        _o+=1
+                        _tp+=1
                         _item = api.get_item(item_id)
                         if not _item:
                             log("   - Cant get item id %s"%item_id)
                         else:
-                            log("   - Fetched item %s"%item_id)
+                            log("   - Fetched item %s [%s/%s]"%(item_id, _o, _c))
                             item_db = models.Item(item_id, _item.name, _item.icon, _item.description,
                                                   _item.buyPrice, _item.sellPrice, _item.quality, _item.itemLevel)
                             #to_add.append(item_db)
                             try:
                                 session.add(item_db)
                                 session.flush()
-                            except Exception,e:
-                                log("   - Error adding id %s - %s"%(item_id, e))
+                                if _tp == 30:
+                                    session.commit()
+                                    _tp = 0
+                            except Exception:
+                                log("   - Error adding id %s"%(item_id))
                                 session.rollback()
                     session.commit()
                     
