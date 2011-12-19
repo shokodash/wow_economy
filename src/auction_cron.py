@@ -192,7 +192,7 @@ if __name__ == "__main__":
         os.mkdir("auction_cache")
 
     log("Spinning up thread pools...")
-    realm_pool = multiprocessing.pool.ThreadPool(1)
+    realm_pool = multiprocessing.pool.ThreadPool(4)
     
     api = battlenet.BattleNetApi(log)
     
@@ -201,6 +201,3 @@ if __name__ == "__main__":
     log("Retrieved %s realms, sending to the realm pool"%len(realms))
     
     realm_pool.map(HandleRealm, realms, chunksize=10)
-    #for realm in realms:
-    #    HandleRealm(realm)
-    raw_input()
