@@ -171,7 +171,7 @@ def HandleRealm(realm):
                         if not _item:
                             log("   - Cant get item id %s"%item_id)
                         else:
-                            log("   - Fetched item %s [%s/%s]"%(item_id, _o, _c))
+                            #log("   - Fetched item %s [%s/%s]"%(item_id, _o, _c))
                             item_db = models.Item(item_id, _item.name, _item.icon, _item.description,
                                                   _item.buyPrice, _item.sellPrice, _item.quality, _item.itemLevel)
                             #to_add.append(item_db)
