@@ -11,6 +11,7 @@ import multiprocessing.pool
 import os
 import json
 import datetime
+import array
 #from sqlalchemy.orm.exc import NoResultFound
 
 #logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
@@ -34,6 +35,7 @@ def GrabItemInfo(data):
     else:
         sys.stdout.write("!")
         
+
 def HandleRealm(realm):
     api = battlenet.BattleNetApi(log)
     
@@ -70,26 +72,28 @@ def HandleRealm(realm):
             
     for key in ("alliance","horde","neutral"):
         auc = auctions[key]["auctions"]
+        del auctions[key]
         db_realm.auction_count+=len(auc)
         
         _json_path = "auction_cache/%s_%s.json"%(db_realm.slug, key)
             
         log("   - Found %s auctions for faction %s"%(len(auc), key))
-        auc_ids = set([auction_data["auc"] for auction_data in auc])
+        auc_ids = array.array("I",[auction_data["auc"] for auction_data in auc])
         
         if os.path.exists(_json_path): # We have the previous shit on record
             with open(_json_path,"r") as pd:
                 try:
-                    previous_ids = json.load(pd)
+                    previous_ids = array.array("I",json.load(pd))
                 except ValueError:
                     log("    - Error decoding JSON document %s! Removing"%_json_path)
                     os.remove(_json_path)
                 
                 else:
-                    new_ids = auc_ids - set(previous_ids)
+                    new_ids = array.array("I", set(auc_ids) - set(previous_ids))
+                    del previous_ids
                     log("    - Found %s new auctions"%len(new_ids))
                     
-                    new_item_ids = [t["item"] for t in auc if t["auc"] in new_ids]
+                    new_item_ids = array.array("I", [t["item"] for t in auc if t["auc"] in new_ids])
                     if not len(new_item_ids):
                         log("     - Passing...")
                         continue
@@ -97,8 +101,11 @@ def HandleRealm(realm):
                                                                    .filter(models.Price.realm==db_realm) \
                                                                    .filter(models.Price.item_id.in_(new_item_ids)) \
                                                                    .filter(models.Price.faction==key)
+                                                                   
                     price_objects = {p.item_id:p for p in query.all()}
                     to_add = []
+                    
+                    del new_item_ids
                     
                     for auction in auc:
                         if auction["auc"] in new_ids:
@@ -141,16 +148,38 @@ def HandleRealm(realm):
                                 price_db.average_counter = 1
                             to_add.append(price_db)
                             
+                    
+                    
+                    item_ids = set([auction_data["item"] for auction_data in auc])
+                    
+                    items_that_dont_exist = item_ids - set([ o[0] for o in session.query(models.Item.id).filter(models.Item.id.in_(item_ids)).all() ])
+                    
+                    log("   - Found %s item that dont exist"%len(items_that_dont_exist))
+                    for item_id in items_that_dont_exist:
+                        _item = api.get_item(item_id)
+                        if not _item:
+                            log("   - Cant get item id %s"%item_id)
+                        else:
+                            log("   - Fetched item %s"%item_id)
+                            item_db = models.Item(item_id, _item.name, _item.icon, _item.description,
+                                                  _item.buyPrice, _item.sellPrice, _item.quality, _item.itemLevel)
+                            #to_add.append(item_db)
+                            try:
+                                session.add(item_db)
+                            except Exception,e:
+                                log("   - Error adding id %s - %s"%(item_id, e))
+                            
                     session.add_all(to_add)
                     session.commit()
-        
+                    del to_add
+            
         else:
             log("    - No previous dump found, dumping current record.")
         
         with open(_json_path, "w") as fd:
             json.dump(list(auc_ids), fd)
         
-        del auctions[key]
+        
     
     db_realm.lastupdate = lastModified / 1000
     session.add(db_realm)
@@ -162,8 +191,8 @@ if __name__ == "__main__":
     if not os.path.exists("auction_cache"):
         os.mkdir("auction_cache")
 
-    log("Spinning up processing pools...")
-    realm_pool = multiprocessing.pool.ThreadPool(5)
+    log("Spinning up thread pools...")
+    realm_pool = multiprocessing.pool.ThreadPool(1)
     
     api = battlenet.BattleNetApi(log)
     
@@ -174,3 +203,4 @@ if __name__ == "__main__":
     realm_pool.map(HandleRealm, realms, chunksize=10)
     #for realm in realms:
     #    HandleRealm(realm)
+    raw_input()
