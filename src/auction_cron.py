@@ -152,7 +152,7 @@ def HandleRealm(realm):
                     session.commit()
                     
                     for item in price_objects:
-                        session.expunge(item)
+                        session.expunge(price_objects[item])
                     del price_objects
                     del to_add
                     
