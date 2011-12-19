@@ -148,7 +148,9 @@ def HandleRealm(realm):
                                 price_db.average_counter = 1
                             to_add.append(price_db)
                             
-                    
+                    session.add_all(to_add)
+                    session.commit()
+                    del to_add
                     
                     item_ids = set([auction_data["item"] for auction_data in auc])
                     
@@ -170,10 +172,8 @@ def HandleRealm(realm):
                             except Exception,e:
                                 log("   - Error adding id %s - %s"%(item_id, e))
                                 session.rollback()
-                            
-                    session.add_all(to_add)
                     session.commit()
-                    del to_add
+                    
             
         else:
             log("    - No previous dump found, dumping current record.")
