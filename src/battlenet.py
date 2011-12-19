@@ -20,6 +20,9 @@ class Item(object):
     
     def __repr__(self):
         return "<Item(%s,%s,%s)>"%(self.name, self.icon, self.quality)
+    
+class UnavailableError(Exception):
+    pass
 
 class BattleNetApi(object):
     def __init__(self, logfunc):
@@ -29,9 +32,11 @@ class BattleNetApi(object):
         try:
             #r = requests.get(url)
             r = urllib2.urlopen(url)
-        except Exception:
+        except Exception,e:
             self.logger("Request to %s failed. Traceback:"%url)
             self.logger(traceback.format_exc())
+            if e.code == 503:
+                raise UnavailableError()
             return None
         
         try:
