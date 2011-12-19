@@ -169,6 +169,7 @@ def HandleRealm(realm):
                                 session.flush()
                             except Exception,e:
                                 log("   - Error adding id %s - %s"%(item_id, e))
+                                session.rollback()
                             
                     session.add_all(to_add)
                     session.commit()
