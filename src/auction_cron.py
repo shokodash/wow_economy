@@ -150,6 +150,10 @@ def HandleRealm(realm):
                             
                     session.add_all(to_add)
                     session.commit()
+                    
+                    for item in price_objects:
+                        session.expunge(item)
+                    del price_objects
                     del to_add
                     
                     item_ids = set([auction_data["item"] for auction_data in auc])
@@ -177,7 +181,7 @@ def HandleRealm(realm):
                                 if _tp == 30:
                                     session.commit()
                                     _tp = 0
-                                    session.expunge_all()
+                                session.expunge(item_db)
                             except Exception:
                                 log("   - Error adding id %s"%(item_id))
                                 session.rollback()
