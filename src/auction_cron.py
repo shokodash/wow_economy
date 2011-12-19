@@ -177,6 +177,7 @@ def HandleRealm(realm):
                                 if _tp == 30:
                                     session.commit()
                                     _tp = 0
+                                    session.expunge_all()
                             except Exception:
                                 log("   - Error adding id %s"%(item_id))
                                 session.rollback()
