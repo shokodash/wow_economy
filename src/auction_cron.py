@@ -166,6 +166,7 @@ def HandleRealm(realm):
                             #to_add.append(item_db)
                             try:
                                 session.add(item_db)
+                                session.flush()
                             except Exception,e:
                                 log("   - Error adding id %s - %s"%(item_id, e))
                             
