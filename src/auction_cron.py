@@ -151,6 +151,8 @@ def HandleRealm(realm):
                     session.add_all(to_add)
                     session.commit()
                     
+                    log("   - Commited new auctions to the database")
+                    
                     for item in price_objects:
                         session.expunge(price_objects[item])
                     del price_objects
@@ -160,7 +162,7 @@ def HandleRealm(realm):
                     
                     items_that_dont_exist = item_ids - set([ o[0] for o in session.query(models.Item.id).filter(models.Item.id.in_(item_ids)).all() ])
                     
-                    log("   - Found %s item that dont exist"%len(items_that_dont_exist))
+                    log("   - Found %s items that dont exist"%len(items_that_dont_exist))
                     _c = len(items_that_dont_exist)
                     _o = 0
                     _tp = 0
@@ -185,9 +187,10 @@ def HandleRealm(realm):
                             except Exception:
                                 log("   - Error adding id %s"%(item_id))
                                 session.rollback()
-                    session.commit()
-                    
-            
+                    try:
+                        session.commit()
+                    except Exception:
+                        session.rollback() 
         else:
             log("    - No previous dump found, dumping current record.")
         
@@ -207,7 +210,7 @@ if __name__ == "__main__":
         os.mkdir("auction_cache")
 
     log("Spinning up thread pools...")
-    realm_pool = multiprocessing.pool.ThreadPool(4)
+    #realm_pool = multiprocessing.pool.ThreadPool(4)
     
     api = battlenet.BattleNetApi(log)
     
@@ -215,4 +218,6 @@ if __name__ == "__main__":
     realms = api.get_realms()
     log("Retrieved %s realms, sending to the realm pool"%len(realms))
     
-    realm_pool.map(HandleRealm, realms, chunksize=10)
+    for i in realms:
+        HandleRealm(i)
+    #realm_pool.map(HandleRealm, realms, chunksize=10)
