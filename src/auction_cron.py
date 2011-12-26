@@ -8,7 +8,9 @@ import os
 import multiprocessing.pool
 import json
 import datetime
+import traceback
 from numpy import array as nparray
+from sqlalchemy import exc
 #from sqlalchemy.orm.exc import NoResultFound
 
 #logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
@@ -26,9 +28,13 @@ def HandleRealm(realm):
     session = models.Session()
     log("Connection successful. Parsing...")
     
-    log(" - Realm: %s"%realm)
+    log(" - Getting realm: %s"%realm)
     try:
-        db_realm = session.query(models.Realm).filter(models.Realm.slug == realm.slug).one()
+        db_realm = session.query(models.Realm).filter(models.Realm.slug == realm.slug).with_lockmode("read").one()
+    except exc.DBAPIError:
+        log("  - Could not get the realm, task already running!")
+        session.close()
+        return None
     except Exception:
         db_realm = models.Realm(realm.name, realm.slug)
         session.add(db_realm)
@@ -179,7 +185,8 @@ def HandleRealm(realm):
     db_realm.lastupdate = lastModified / 1000
     session.add(db_realm)
     session.commit()
-    log("   - Finished realm %s"%db_realm.slug)
+    session.close()
+    log("   - Finished realm %s"%realm.slug)
 
 if __name__ == "__main__":
     
@@ -194,4 +201,8 @@ if __name__ == "__main__":
     log("Getting realm list...")
     realms = api.get_realms()
     log("Retrieved %s realms, sending to the realm pool"%len(realms))
-    realm_pool.map(HandleRealm, realms)
+    for r in realms:
+        if r.slug == "arygos":
+            HandleRealm(r)
+    #realm_pool.map(HandleRealm, )
+    #realm_pool.map(HandleRealm, realms)
