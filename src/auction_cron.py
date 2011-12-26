@@ -2,38 +2,21 @@
 # Gets new auctions, processes them and updates the database. To be ran as a cron job.
 
 import models
-import logging
 import battlenet
-import sys
 import time
-import locale
-import multiprocessing.pool
 import os
+import multiprocessing.pool
 import json
 import datetime
-import array
+from numpy import array as nparray
 #from sqlalchemy.orm.exc import NoResultFound
 
 #logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-
-default_encoding = locale.getpreferredencoding()
 
 def log(message):
     # Quick and dirty.
     #sys.stdout.write("%s: %s\n"%(time.asctime(), message))
     print (u"%s: %s"%(time.asctime(), message)).encode("utf-8")
-
-def GrabItemInfo(data):
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    
-    r = api.get_item(data["item"])
-    if r:
-        r._auctionID = data["auc"]
-        sys.stdout.write(".")
-        return r
-    else:
-        sys.stdout.write("!")
         
 
 def HandleRealm(realm):
@@ -67,6 +50,7 @@ def HandleRealm(realm):
         log("   - Skipping auctions for realm %s"%realm)
         return
     
+    
     log("  - LastModified: %s"%(time.ctime(lastModified / 1000)))
     db_realm.auction_count = 0
             
@@ -78,25 +62,31 @@ def HandleRealm(realm):
         _json_path = "auction_cache/%s_%s.json"%(db_realm.slug, key)
             
         log("   - Found %s auctions for faction %s"%(len(auc), key))
-        auc_ids = array.array("I",[auction_data["auc"] for auction_data in auc])
-        
+        auc_ids = nparray([auction_data["auc"] for auction_data in auc])
+        #from numpy import array
+
         if os.path.exists(_json_path): # We have the previous shit on record
             with open(_json_path,"r") as pd:
                 try:
-                    previous_ids = array.array("I",json.load(pd))
+                    previous_ids = nparray(json.load(pd))
                 except ValueError:
                     log("    - Error decoding JSON document %s! Removing"%_json_path)
                     os.remove(_json_path)
                 
                 else:
-                    new_ids = array.array("I", set(auc_ids) - set(previous_ids))
-                    del previous_ids
+                    temp_ids = list(set(auc_ids) - set(previous_ids))
+                    if len(temp_ids):
+                        new_ids = nparray(temp_ids)
+                    else:
+                        new_ids = []
+                    del previous_ids, temp_ids
                     log("    - Found %s new auctions"%len(new_ids))
-                    
-                    new_item_ids = array.array("I", [t["item"] for t in auc if t["auc"] in new_ids])
+                    new_item_ids = nparray([t["item"] for t in auc if t["auc"] in new_ids])
+                    log("    - Created item array")
                     if not len(new_item_ids):
                         log("     - Passing...")
                         continue
+
                     query = session.query(models.Price).filter(models.Price.day==datetime.datetime.now().date()) \
                                                                    .filter(models.Price.realm==db_realm) \
                                                                    .filter(models.Price.item_id.in_(new_item_ids)) \
@@ -110,20 +100,6 @@ def HandleRealm(realm):
                     for auction in auc:
                         if auction["auc"] in new_ids:
                             # We got a new item yo
-                            '''try:
-                                item_db = session.query(models.Item).filter(models.Item.id == auction["item"]).one()
-                                #log("    - Item ID %s exists, not fetching"%auction["item"])
-                            except Exception:
-                                log("    - Item ID %s does not exist. Fetching and adding"%auction["item"])
-                                _item = api.get_item(auction["item"])
-                                if not _item:
-                                    log("     - Cannot fetch item id %s!"%auction["item"])
-                                else:
-                                    item_db = models.Item(auction["item"], _item.name, _item.icon, _item.description,
-                                                          _item.buyPrice, _item.sellPrice, _item.quality, _item.itemLevel)
-                                    session.add(item_db)
-                                    #session.commit()'''
-                                    
                             userauction = models.UserAuction(auction["owner"], auction["item"]) #TODO: Verify this
                             to_add.append(userauction)
                             
@@ -150,7 +126,7 @@ def HandleRealm(realm):
                             
                     session.add_all(to_add)
                     session.commit()
-                    
+
                     log("   - Commited new auctions to the database")
                     
                     for item in price_objects:
@@ -191,6 +167,7 @@ def HandleRealm(realm):
                         session.commit()
                     except Exception:
                         session.rollback() 
+
         else:
             log("    - No previous dump found, dumping current record.")
         
@@ -210,14 +187,11 @@ if __name__ == "__main__":
         os.mkdir("auction_cache")
 
     log("Spinning up thread pools...")
-    #realm_pool = multiprocessing.pool.ThreadPool(4)
+    realm_pool = multiprocessing.pool.ThreadPool(4)
     
     api = battlenet.BattleNetApi(log)
     
     log("Getting realm list...")
     realms = api.get_realms()
     log("Retrieved %s realms, sending to the realm pool"%len(realms))
-    
-    for i in realms:
-        HandleRealm(i)
-    #realm_pool.map(HandleRealm, realms, chunksize=10)
+    realm_pool.map(HandleRealm, realms)
