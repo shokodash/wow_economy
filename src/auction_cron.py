@@ -201,8 +201,4 @@ if __name__ == "__main__":
     log("Getting realm list...")
     realms = api.get_realms()
     log("Retrieved %s realms, sending to the realm pool"%len(realms))
-    for r in realms:
-        if r.slug == "arygos":
-            HandleRealm(r)
-    #realm_pool.map(HandleRealm, )
-    #realm_pool.map(HandleRealm, realms)
+    realm_pool.map(HandleRealm, realms)
