@@ -8,7 +8,6 @@ import os
 import multiprocessing.pool
 import json
 import datetime
-import traceback
 from numpy import array as nparray
 from sqlalchemy import exc
 #from sqlalchemy.orm.exc import NoResultFound
@@ -145,7 +144,6 @@ def HandleRealm(realm):
                     items_that_dont_exist = item_ids - set([ o[0] for o in session.query(models.Item.id).filter(models.Item.id.in_(item_ids)).all() ])
                     
                     log("   - Found %s items that dont exist"%len(items_that_dont_exist))
-                    _c = len(items_that_dont_exist)
                     _o = 0
                     _tp = 0
                     for item_id in items_that_dont_exist:
@@ -167,7 +165,7 @@ def HandleRealm(realm):
                                     _tp = 0
                                 session.expunge(item_db)
                             except Exception:
-                                log("   - Error adding id %s"%(item_id))
+                                log("   - Error adding id %s"%item_id)
                                 session.rollback()
                     try:
                         session.commit()
@@ -180,8 +178,7 @@ def HandleRealm(realm):
         with open(_json_path, "w") as fd:
             json.dump(list(auc_ids), fd)
         
-        
-    
+
     db_realm.lastupdate = lastModified / 1000
     session.add(db_realm)
     session.commit()
@@ -201,4 +198,4 @@ if __name__ == "__main__":
     log("Getting realm list...")
     realms = api.get_realms()
     log("Retrieved %s realms, sending to the realm pool"%len(realms))
-    realm_pool.map(HandleRealm, realms)
+    realm_pool.map(HandleRealm, realms[:2])

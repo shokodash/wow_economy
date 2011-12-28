@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+    <h1>{{ realm.name }}</h1>
+
+    Top 5 most traded items in this realm today:
+    <table border=1>
+        <tr>
+            <td>Name</td>
+            <td>Faction</td>
+            <td>Volume</td>
+            <td>Average bid</td>
+            <td>Average buyout</td>
+        </tr>
+    {% for price in popular_items %}
+        <tr>
+            <td>{{ names[price.item_id].name }}</td>
+            <td>{{ price.faction }}</td>
+            <td>{{ price.quantity }}</td>
+            <td>{{ price.bid }}</td>
+            <td>{{ price.buyout }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+
+{% endblock %}

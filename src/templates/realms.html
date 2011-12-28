@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+    Realm list:<br />
+    <table border=1>
+        <tr>
+            <td>Realm</td>
+            <td>Last updated</td>
+            <td>Auctions tracked</td>
+        </tr>
+
+    {% for realm in realms %}
+        <tr>
+            <td><a href="{{ url_for('view_realm', realm=realm.slug) }}">{{ realm.name }}</a></td>
+            <td>{{ realm.GetUpdateSeconds() }} ago</td>
+            <td>{{ realm.auction_count }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+
+{% endblock %}

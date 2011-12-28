@@ -1,10 +1,11 @@
 from sqlalchemy import Column, String, Integer, BigInteger, DateTime, Date, ForeignKey, Enum, create_engine, func
 from sqlalchemy import schema
-from sqlalchemy.orm import relationship, backref, sessionmaker, ScopedSession
+from sqlalchemy.orm import relationship, sessionmaker, ScopedSession
 from sqlalchemy.ext.declarative import declarative_base
+import datetime
+import time
 
-engine = create_engine("postgresql+psycopg2://wowauction:password@localhost:5432/wow_auctions",
-                       pool_size=20, isolation_level="REPEATABLE_READ")
+engine = create_engine("postgresql+psycopg2://wowauction:password@localhost:5432/wow_auctions",isolation_level="REPEATABLE_READ", echo=True)
 Base = declarative_base()
 Session = ScopedSession(sessionmaker(bind=engine))
 
@@ -24,6 +25,15 @@ class Realm(Base):
     
     def __repr__(self):
         return "<Realm(%s, %s, %s)>"%(self.name, self.slug, self.lastupdate)
+
+    def GetUpdateSeconds(self):
+        since = datetime.timedelta(seconds=time.time()-self.lastupdate)
+        hours = since.seconds/3600
+        minutes = (since.seconds - hours*3600) / 60
+        ret = "%s hours and %s minutes"%(hours, minutes)
+        if since.days:
+            ret = "%s days, %s"%(since.days, ret)
+        return ret
     
 
 class Item(Base):

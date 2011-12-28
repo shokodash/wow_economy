@@ -73,8 +73,8 @@ class BattleNetApi(object):
             raise Exception()
         d = r["files"][0]
         
-        if ((d["lastModified"] / 1000) > last_timestamp):
+        if (d["lastModified"] / 1000) > last_timestamp:
             # We have a hit, fetch and return
             return d["lastModified"], self.get_content(d["url"])
         else:
-            return (None, None) # Same data
+            return None, None # Same data
