@@ -23,7 +23,7 @@ def view_realm(realm):
     except Exception:
         abort(404)
 
-    most_popular_items = g.db.query(models.Price.item_id).filter(models.Price.realm_id == realm.id).filter(models.Price.day == datetime.datetime.today().date()) \
+    most_popular_items = g.db.query(models.Price).filter(models.Price.realm_id == realm.id).filter(models.Price.day == datetime.datetime.today().date()) \
                                                          .order_by(models.Price.quantity.desc()).limit(5).all()
     item_names = g.db.query(models.Item).filter(models.Item.id.in_([x.item_id for x in most_popular_items])).all()
 
