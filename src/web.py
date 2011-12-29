@@ -1,8 +1,10 @@
 # Web.py
 
-from flask import Flask, g, render_template, abort
+from flask import Flask, g, render_template, abort, request, redirect, url_for
 import models
+import json
 import datetime
+from sqlalchemy import func
 
 app = Flask(__name__)
 
@@ -30,6 +32,29 @@ def view_realm(realm):
     item_name_dict = {x.id:x for x in item_names}
     return render_template("realm.html", realm=realm, popular_items=most_popular_items, names=item_name_dict)
 
+
+@app.route("/item")
+def view_items():
+    total_items = g.db.query(models.Item).count()
+    return render_template("itemsearch.html", count=total_items)
+
+
+@app.route("/item/<name>")
+def view_item(name):
+    items = g.db.query(models.Item).filter(models.Item.name == name).all()
+    if not len(items):
+        abort(404)
+
+    return render_template("item.html", items=items)
+
+
+@app.route("/item/search")
+def item_search():
+    term = request.args.get("term")
+    names = g.db.query(models.Item).filter(func.lower(models.Item.name).startswith(term.lower())).distinct().limit(20).all()
+    return json.dumps([{"id":x.id, "label":x.name, "value":x.name} for x in names])
+
+
 @app.before_request
 def before_request():
     g.db = models.Session()
@@ -41,4 +66,4 @@ def after_request(r):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)#, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=True)

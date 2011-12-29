@@ -40,7 +40,7 @@ class Item(Base):
     __tablename__ = "item"
     
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    name = Column(String, index=True) #ToDo: Make this a lowered index
     icon = Column(String(250))
     description = Column(String)
     

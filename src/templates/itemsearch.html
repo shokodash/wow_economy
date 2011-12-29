@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block head %}
+
+    <script type="text/javascript" src="{{ url_for('static',filename='js/jquery-ui-1.8.16.custom.min.js') }}"></script>
+
+    <script>
+       $(document).ready(function(){
+           $("#itemsearch").autocomplete({
+               source:"{{ url_for('item_search') }}",
+               minLength:3,
+               select: function(e,ui) {
+                   window.location.href = "{{ url_for('view_items') }}/"+ui.item.value;
+               }
+           })
+       })
+    </script>
+
+{% endblock %}
+
+{% block body %}
+    We have {{ count }} items in our database.<br/>
+    Item Search: <input id="itemsearch"/>
+{% endblock %}

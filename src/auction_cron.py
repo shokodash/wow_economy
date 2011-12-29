@@ -10,6 +10,7 @@ import json
 import datetime
 from numpy import array as nparray
 from sqlalchemy import exc
+import sys
 #from sqlalchemy.orm.exc import NoResultFound
 
 #logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
@@ -194,8 +195,11 @@ if __name__ == "__main__":
     realm_pool = multiprocessing.pool.ThreadPool(4)
     
     api = battlenet.BattleNetApi(log)
-    
+
     log("Getting realm list...")
     realms = api.get_realms()
     log("Retrieved %s realms, sending to the realm pool"%len(realms))
-    realm_pool.map(HandleRealm, realms[:2])
+    if "--debug" in sys.argv:
+        realm_pool.map(HandleRealm, [x for x in realms if x.slug == "aegwynn"])
+    else:
+        realm_pool.map(HandleRealm, realms)
