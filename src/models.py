@@ -4,8 +4,9 @@ from sqlalchemy.orm import relationship, sessionmaker, ScopedSession
 from sqlalchemy.ext.declarative import declarative_base
 import datetime
 import time
+import sys
 
-engine = create_engine("postgresql+psycopg2://wowauction:password@localhost:5432/wow_auctions",isolation_level="REPEATABLE_READ", echo=True)
+engine = create_engine("postgresql+psycopg2://wowauction:password@localhost:5432/wow_auctions",isolation_level="REPEATABLE_READ", echo="--debug" in sys.argv)
 Base = declarative_base()
 Session = ScopedSession(sessionmaker(bind=engine))
 
