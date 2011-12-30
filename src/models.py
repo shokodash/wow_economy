@@ -1,5 +1,6 @@
 from sqlalchemy import Column, String, Integer, BigInteger, DateTime, Date, ForeignKey, Enum, create_engine, func
 from sqlalchemy import schema
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship, sessionmaker, ScopedSession
 from sqlalchemy.ext.declarative import declarative_base
 import datetime
@@ -69,17 +70,17 @@ class Item(Base):
 
 class UserAuction(Base):
     __tablename__ = "userauctions"
-    
-    id = Column(Integer, primary_key=True)
-    owner = Column(String)
-    added = Column(DateTime, default=func.now())
-    
-    item_id = Column(Integer)#, ForeignKey("item.id"))
+
+    owner = Column(String, primary_key=True)
+    lastUpdated = Column(DateTime)
+    items = Column(postgresql.ARRAY(Integer))
+
     #item = relationship("Item", backref=backref("sellers", order_by=-added))
     
-    def __init__(self, owner, item):
+    def __init__(self, owner, items):
         self.owner = owner
-        self.item = item
+        self.lastUpdated = datetime.datetime.now()
+        self.items = items
 
 
 #class Faction(Base):

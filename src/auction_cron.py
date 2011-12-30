@@ -54,6 +54,7 @@ def HandleRealm(realm):
     
     if (lastModified, auctions) == (None, None):
         log("   - Skipping auctions for realm %s"%realm)
+        session.close()
         return
     
     
@@ -102,12 +103,16 @@ def HandleRealm(realm):
                     to_add = []
                     
                     del new_item_ids
+
+                    uauction = {}
                     
                     for auction in auc:
                         if auction["auc"] in new_ids:
                             # We got a new item yo
-                            userauction = models.UserAuction(auction["owner"], auction["item"]) #TODO: Verify this
-                            to_add.append(userauction)
+                            if auction["owner"] not in uauction:
+                                uauction[auction["owner"]] = set()
+
+                            uauction[auction["owner"]].add(auction["item"])
                             
                             # Lets see if we have a Price already
                             if auction["item"] in price_objects:
@@ -129,7 +134,20 @@ def HandleRealm(realm):
                                 price_db.buyout = auction["buyout"]
                                 price_db.average_counter = 1
                             to_add.append(price_db)
-                            
+
+                    user_auctions_that_exist = session.query(models.UserAuction).filter(models.UserAuction.owner.in_(uauction.keys())).all()
+                    for uauc in user_auctions_that_exist:
+                        uauc.items = uauc.items + list(uauction[uauc.owner])
+                        if len(uauc.items) > 30:
+                            uauc.items = uauc.items[len(uauc.items)-30:] # Pop the last auctions off the list
+                        uauc.last_updated = datetime.datetime.now()
+                        to_add.append(uauc)
+
+                        del uauction[uauc.owner]
+
+                    for name in uauction:
+                        to_add.append(models.UserAuction(name, uauction[name]))
+
                     session.add_all(to_add)
                     session.commit()
 
@@ -200,6 +218,6 @@ if __name__ == "__main__":
     realms = api.get_realms()
     log("Retrieved %s realms, sending to the realm pool"%len(realms))
     if "--debug" in sys.argv:
-        realm_pool.map(HandleRealm, [x for x in realms if x.slug == "aegwynn"])
+        HandleRealm([x for x in realms if x.slug == "aegwynn"][0])
     else:
         realm_pool.map(HandleRealm, realms)
