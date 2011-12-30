@@ -139,7 +139,7 @@ def HandleRealm(realm):
 
                     while True:
                         try:
-                            user_auctions_that_exist = session.query(models.UserAuction).filter(models.UserAuction.owner.in_(uauction.keys())).with_lockmode("update").all()
+                            user_auctions_that_exist = session.query(models.UserAuction).filter(models.UserAuction.owner.in_(uauction.keys())).with_lockmode("read").all()
                         except exc.DBAPIError:
                             log("   - Could not get user_auctions_that_exist due to locking, retrying...")
                             continue
