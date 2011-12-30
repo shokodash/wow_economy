@@ -15,7 +15,7 @@
         </tr>
     {% for price in popular_items %}
         <tr>
-            <td>{{ names[price.item_id].name }}</td>
+            <td><a href="{{ url_for('view_item', name=names[price.item_id].name) }}">{{ names[price.item_id].name }}</a></td>
             <td>{{ price.faction }}</td>
             <td>{{ price.quantity }}</td>
             <td>{{ price.bid }}</td>

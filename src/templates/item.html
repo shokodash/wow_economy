@@ -1,1 +1,28 @@
 {% extends "layout.html" %}
+
+{% block titleaddition %}- {{ name }}{% endblock %}
+
+{% block head %}
+    <script type='text/javascript' src='http://www.google.com/jsapi'></script>
+    <script type="text/javascript">
+        google.load('visualization', '1', {'packages':['annotatedtimeline']});
+
+        google.setOnLoadCallback(function(){
+                    var data = new google.visualization.DataTable();
+
+                }
+        )
+
+    </script>
+{% endblock %}
+
+{% block body %}
+    Icon: <img src="{{ first_item.get_icon() }}"><br />
+    {% if first_item.description %}Description: {{ first_item.description }}{% endif %}
+    <br />
+    {% for item in items %}
+        Level: {{ item.level }}<br />
+        ItemID: {{ item.id }}
+        <br /><br />
+    {% endfor %}
+{% endblock %}

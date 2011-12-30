@@ -1,10 +1,10 @@
 # Web.py
 
-from flask import Flask, g, render_template, abort, request, redirect, url_for
+from flask import Flask, g, render_template, abort, request, redirect, url_for, jsonify
 import models
 import json
 import datetime
-from sqlalchemy import func
+from sqlalchemy import func, exists
 
 app = Flask(__name__)
 
@@ -41,11 +41,29 @@ def view_items():
 
 @app.route("/item/<name>")
 def view_item(name):
-    items = g.db.query(models.Item).filter(models.Item.name == name).all()
+    items = g.db.query(models.Item).filter(models.Item.name == name).order_by(models.Item.quality.desc()).all()
     if not len(items):
         abort(404)
 
-    return render_template("item.html", items=items)
+    return render_template("item.html", items=items, name=name, first_item=items[0])
+
+
+@app.route("/getprices/<int:id>/<server>/<faction>")
+def get_prices(id, server, faction):
+    try:
+        realm_id = g.db.query(models.Realm.id).filter(models.Realm.slug == server).one()
+    except Exception:
+        return jsonify(error="No realm exists")
+
+    today = datetime.datetime.now().date()
+    before = today - datetime.timedelta(days=30)
+
+    prices = g.db.query(models.Price).filter_by(realm_id=realm_id, faction=faction, item_id=id) \
+                                                .filter(models.Price.day.between(before, today)).order_by(models.Price.day).all()
+
+    return jsonify(error=None,
+                   data=[((p.day.year, p.day.month, p.day.day), p.bid) for p in prices])
+
 
 
 @app.route("/item/search")
