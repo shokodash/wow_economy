@@ -105,7 +105,7 @@ def HandleRealm(realm):
                     del new_item_ids
 
                     uauction = {}
-                    uaction_objects = []
+                    uauction_objects = []
                     
                     for auction in auc:
                         if auction["auc"] in new_ids:
@@ -149,14 +149,14 @@ def HandleRealm(realm):
                                 uauc.items = uauc.items[len(uauc.items)-30:] # Pop the last auctions off the list
                             uauc.last_updated = datetime.datetime.now()
                             to_add.append(uauc)
-                            uaction_objects.append(uauc)
+                            uauction_objects.append(uauc)
 
                             del uauction[uauc.owner]
 
                         for name in uauction:
                             p = models.UserAuction(name, uauction[name])
                             to_add.append(p)
-                            uaction_objects.append(p)
+                            uauction_objects.append(p)
                         break
 
                     session.add_all(to_add)
