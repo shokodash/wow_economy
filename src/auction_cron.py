@@ -137,7 +137,7 @@ def HandleRealm(realm):
                                 price_db.average_counter = 1
                             to_add.append(price_db)
 
-                    while True:
+                    """while True:
                         try:
                             user_auctions_that_exist = session.query(models.UserAuction).filter(models.UserAuction.owner.in_(uauction.keys())).with_lockmode("read").all()
                         except exc.DBAPIError:
@@ -162,6 +162,7 @@ def HandleRealm(realm):
                                 continue
                             uauction_objects.append(p)
                         break
+                        log("   - Inserted prices")"""
 
                     session.add_all(to_add)
                     session.commit()
@@ -170,8 +171,8 @@ def HandleRealm(realm):
                     
                     for item in price_objects:
                         session.expunge(price_objects[item])
-                    for uauction in uauction_objects:
-                        session.expunge(uauction)
+                    #for uauction in uauction_objects:
+                    #    session.expunge(uauction)
                     del price_objects
                     del to_add
                     
