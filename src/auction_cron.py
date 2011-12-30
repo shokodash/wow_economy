@@ -155,7 +155,11 @@ def HandleRealm(realm):
 
                         for name in uauction:
                             p = models.UserAuction(name, uauction[name])
-                            to_add.append(p)
+                            try:
+                                session.add(p)
+                            except Exception:
+                                log("   - Error adding price")
+                                continue
                             uauction_objects.append(p)
                         break
 
