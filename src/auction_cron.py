@@ -105,14 +105,16 @@ def HandleRealm(realm):
                     del new_item_ids
 
                     uauction = {}
+                    uaction_objects = []
                     
                     for auction in auc:
                         if auction["auc"] in new_ids:
                             # We got a new item yo
-                            if auction["owner"] not in uauction:
-                                uauction[auction["owner"]] = set()
+                            if not auction["owner"] == "???":
+                                if auction["owner"] not in uauction:
+                                    uauction[auction["owner"]] = set()
 
-                            uauction[auction["owner"]].add(auction["item"])
+                                uauction[auction["owner"]].add(auction["item"])
                             
                             # Lets see if we have a Price already
                             if auction["item"] in price_objects:
@@ -135,18 +137,27 @@ def HandleRealm(realm):
                                 price_db.average_counter = 1
                             to_add.append(price_db)
 
-                    user_auctions_that_exist = session.query(models.UserAuction).filter(models.UserAuction.owner.in_(uauction.keys())).all()
-                    for uauc in user_auctions_that_exist:
-                        uauc.items = uauc.items + list(uauction[uauc.owner])
-                        if len(uauc.items) > 30:
-                            uauc.items = uauc.items[len(uauc.items)-30:] # Pop the last auctions off the list
-                        uauc.last_updated = datetime.datetime.now()
-                        to_add.append(uauc)
+                    while True:
+                        try:
+                            user_auctions_that_exist = session.query(models.UserAuction).filter(models.UserAuction.owner.in_(uauction.keys())).with_lockmode("update").all()
+                        except exc.DBAPIError:
+                            log("   - Could not get user_auctions_that_exist due to locking, retrying...")
+                            continue
+                        for uauc in user_auctions_that_exist:
+                            uauc.items = uauc.items + list(uauction[uauc.owner])
+                            if len(uauc.items) > 30:
+                                uauc.items = uauc.items[len(uauc.items)-30:] # Pop the last auctions off the list
+                            uauc.last_updated = datetime.datetime.now()
+                            to_add.append(uauc)
+                            uaction_objects.append(uauc)
 
-                        del uauction[uauc.owner]
+                            del uauction[uauc.owner]
 
-                    for name in uauction:
-                        to_add.append(models.UserAuction(name, uauction[name]))
+                        for name in uauction:
+                            p = models.UserAuction(name, uauction[name])
+                            to_add.append(p)
+                            uaction_objects.append(p)
+                        break
 
                     session.add_all(to_add)
                     session.commit()
@@ -155,6 +166,8 @@ def HandleRealm(realm):
                     
                     for item in price_objects:
                         session.expunge(price_objects[item])
+                    for uauction in uauction_objects:
+                        session.expunge(uauction)
                     del price_objects
                     del to_add
                     
