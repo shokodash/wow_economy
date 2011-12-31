@@ -72,13 +72,16 @@ class UserAuction(Base):
     __tablename__ = "userauctions"
 
     owner = Column(String, primary_key=True)
+    realm_id = Column(Integer, ForeignKey("realms.id"))
+    realm = relationship("Realm")
     lastUpdated = Column(DateTime)
     items = Column(postgresql.ARRAY(Integer))
 
     #item = relationship("Item", backref=backref("sellers", order_by=-added))
     
-    def __init__(self, owner, items):
+    def __init__(self, owner, realm, items):
         self.owner = owner
+        self.realm = realm
         self.lastUpdated = datetime.datetime.now()
         self.items = items
 
