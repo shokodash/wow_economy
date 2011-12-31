@@ -72,7 +72,7 @@ class UserAuction(Base):
     __tablename__ = "userauctions"
 
     owner = Column(String, primary_key=True)
-    realm_id = Column(Integer, ForeignKey("realms.id"))
+    realm_id = Column(Integer, ForeignKey("realms.id"), primary_key=True)
     realm = relationship("Realm")
     lastUpdated = Column(DateTime)
     items = Column(postgresql.ARRAY(Integer))
