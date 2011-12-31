@@ -137,32 +137,23 @@ def HandleRealm(realm):
                                 price_db.average_counter = 1
                             to_add.append(price_db)
 
-                    """while True:
-                        try:
-                            user_auctions_that_exist = session.query(models.UserAuction).filter(models.UserAuction.owner.in_(uauction.keys())).with_lockmode("read").all()
-                        except exc.DBAPIError:
-                            log("   - Could not get user_auctions_that_exist due to locking, retrying...")
-                            continue
-                        for uauc in user_auctions_that_exist:
-                            uauc.items = uauc.items + list(uauction[uauc.owner])
-                            if len(uauc.items) > 30:
-                                uauc.items = uauc.items[len(uauc.items)-30:] # Pop the last auctions off the list
-                            uauc.last_updated = datetime.datetime.now()
-                            to_add.append(uauc)
-                            uauction_objects.append(uauc)
+                    log("    - Found %s owners, searching"%len(uauction.keys()))
+                    user_auctions_that_exist = session.query(models.UserAuction).filter(models.UserAuction.owner.in_(uauction.keys())).with_lockmode("read").all()
 
-                            del uauction[uauc.owner]
+                    for uauc in user_auctions_that_exist:
+                        uauc.items = uauc.items + list(uauction[uauc.owner])
+                        if len(uauc.items) > 30:
+                            uauc.items = uauc.items[len(uauc.items)-30:] # Pop the last auctions off the list
+                        uauc.last_updated = datetime.datetime.now()
+                        to_add.append(uauc)
+                        uauction_objects.append(uauc)
 
-                        for name in uauction:
-                            p = models.UserAuction(name, uauction[name])
-                            try:
-                                session.add(p)
-                            except Exception:
-                                log("   - Error adding price")
-                                continue
-                            uauction_objects.append(p)
-                        break
-                        log("   - Inserted prices")"""
+                        del uauction[uauc.owner]
+
+                    for name in uauction:
+                        p = models.UserAuction(name, db_realm, uauction[name])
+                        to_add.append(p)
+                        uauction_objects.append(p)
 
                     session.add_all(to_add)
                     session.commit()
@@ -171,10 +162,12 @@ def HandleRealm(realm):
                     
                     for item in price_objects:
                         session.expunge(price_objects[item])
-                    #for uauction in uauction_objects:
-                    #    session.expunge(uauction)
+                    for uauction in uauction_objects:
+                        session.expunge(uauction)
                     del price_objects
                     del to_add
+                    del uauction_objects
+                    del uauction
                     
                     item_ids = set([auction_data["item"] for auction_data in auc])
                     

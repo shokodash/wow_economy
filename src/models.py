@@ -7,7 +7,7 @@ import datetime
 import time
 import sys
 
-engine = create_engine("postgresql+psycopg2://wowauction:password@localhost:5432/wow_auctions",isolation_level="REPEATABLE_READ", echo="--debug" in sys.argv)
+engine = create_engine("postgresql+psycopg2://wowauction:password@localhost:5432/wow_auctions",isolation_level="REPEATABLE_READ", echo=False)#"--debug" in sys.argv)
 Base = declarative_base()
 Session = ScopedSession(sessionmaker(bind=engine))
 
