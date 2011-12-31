@@ -1,6 +1,16 @@
 # Auctioncron.py
 # Gets new auctions, processes them and updates the database. To be ran as a cron job.
 
+import lockfile
+import sys
+lock = lockfile.LockFile("auctioncron.lock")
+while not lock.i_am_locking():
+    try:
+        lock.acquire(timeout=60)
+    except lockfile.LockTimeout:
+        print "Could not get the lock in 60 seconds, exiting."
+        sys.exit(1)
+
 import models
 import battlenet
 import time
@@ -232,3 +242,5 @@ if __name__ == "__main__":
         HandleRealm([x for x in realms if x.slug == "aegwynn"][0])
     else:
         realm_pool.map(HandleRealm, realms)
+
+    lock.release()
