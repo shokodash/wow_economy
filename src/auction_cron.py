@@ -6,6 +6,7 @@ import sys
 lock = lockfile.LockFile("auctioncron.lock")
 while not lock.i_am_locking():
     try:
+        print "Getting the lock..."
         lock.acquire(timeout=60)
     except lockfile.LockTimeout:
         print "Could not get the lock in 60 seconds, exiting."
@@ -20,7 +21,6 @@ import json
 import datetime
 from numpy import array as nparray
 from sqlalchemy import exc
-import sys
 #from sqlalchemy.orm.exc import NoResultFound
 
 #logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
@@ -148,7 +148,8 @@ def HandleRealm(realm):
                             to_add.append(price_db)
 
                     log("    - Found %s owners, searching"%len(uauction.keys()))
-                    user_auctions_that_exist = session.query(models.UserAuction).filter(models.UserAuction.owner.in_(uauction.keys())).with_lockmode("read").all()
+                    user_auctions_that_exist = session.query(models.UserAuction).filter(models.UserAuction.owner.in_(uauction.keys())) \
+                                                                                .filter(models.UserAuction.realm_id == db_realm.id).all()
 
                     for uauc in user_auctions_that_exist:
                         uauc.items = uauc.items + list(uauction[uauc.owner])
@@ -238,9 +239,10 @@ if __name__ == "__main__":
     log("Getting realm list...")
     realms = api.get_realms()
     log("Retrieved %s realms, sending to the realm pool"%len(realms))
-    if "--debug" in sys.argv:
-        HandleRealm([x for x in realms if x.slug == "aegwynn"][0])
-    else:
-        realm_pool.map(HandleRealm, realms)
-
-    lock.release()
+    try:
+        if "--debug" in sys.argv:
+            HandleRealm([x for x in realms if x.slug == "deathwing"][0])
+        else:
+            realm_pool.map(HandleRealm, realms)
+    finally:
+        lock.release()
