@@ -65,6 +65,33 @@ def get_prices(id, server, faction):
                    data=[((p.day.year, p.day.month, p.day.day), p.bid) for p in prices])
 
 
+@app.route("/user")
+def latestusers():
+    latest_users = g.db.query(models.UserAuction).order_by(models.UserAuction.lastUpdated.desc()).limit(10).all()
+
+
+
+@app.route("/user/search")
+def searchusers():
+    pass
+
+
+@app.route("/user/<realm_slug>/<user_name>")
+def viewuser(realm_slug, user_name):
+    try:
+        realm = g.db.query(models.Realm).filter_by(slug=realm_slug).one()
+    except Exception:
+        return abort(404)
+
+    try:
+        user = g.db.query(models.UserAuction).filter_by(realm=realm, owner=user_name).one()
+    except Exception:
+        return abort(404)
+
+    items = {x.id:x for x in g.db.query(models.Item).filter(models.Item.id.in_(user.items))}
+
+    return render_template("user.html",realm=realm,user=user, item_objects=items)
+
 
 @app.route("/item/search")
 def item_search():

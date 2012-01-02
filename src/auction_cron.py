@@ -227,19 +227,18 @@ def HandleRealm(realm):
     log("   - Finished realm %s"%realm.slug)
 
 if __name__ == "__main__":
-    
-    if not os.path.exists("auction_cache"):
-        os.mkdir("auction_cache")
-
-    log("Spinning up thread pools...")
-    realm_pool = multiprocessing.pool.ThreadPool(4)
-    
-    api = battlenet.BattleNetApi(log)
-
-    log("Getting realm list...")
-    realms = api.get_realms()
-    log("Retrieved %s realms, sending to the realm pool"%len(realms))
     try:
+        if not os.path.exists("auction_cache"):
+            os.mkdir("auction_cache")
+
+        log("Spinning up thread pools...")
+        realm_pool = multiprocessing.pool.ThreadPool(4)
+
+        api = battlenet.BattleNetApi(log)
+
+        log("Getting realm list...")
+        realms = api.get_realms()
+        log("Retrieved %s realms, sending to the realm pool"%len(realms))
         if "--debug" in sys.argv:
             HandleRealm([x for x in realms if x.slug == "deathwing"][0])
         else:

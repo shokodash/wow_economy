@@ -35,8 +35,9 @@ class BattleNetApi(object):
         except Exception,e:
             self.logger("Request to %s failed. Traceback:"%url)
             self.logger(traceback.format_exc())
-            if e.code == 503:
-                raise UnavailableError()
+            if hasattr(e,"code"):
+                if e.code == 503:
+                    raise UnavailableError()
             return None
         
         try:

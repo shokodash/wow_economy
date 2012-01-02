@@ -1,5 +1,5 @@
-from sqlalchemy import Column, String, Integer, BigInteger, DateTime, Date, ForeignKey, Enum, create_engine, func
-from sqlalchemy import schema
+from sqlalchemy import Column, String, Integer, BigInteger, DateTime, Date, ForeignKey, Enum, create_engine, func, Index
+from sqlalchemy import schema, desc
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship, sessionmaker, ScopedSession
 from sqlalchemy.ext.declarative import declarative_base
@@ -7,7 +7,7 @@ import datetime
 import time
 import sys
 
-engine = create_engine("postgresql+psycopg2://wowauction:password@localhost:5432/wow_auctions",isolation_level="REPEATABLE_READ", echo=False)#"--debug" in sys.argv)
+engine = create_engine("postgresql+psycopg2://wowauction:password@localhost:5432/wow_auctions",isolation_level="REPEATABLE_READ", echo=True)#"--debug" in sys.argv)
 Base = declarative_base()
 Session = ScopedSession(sessionmaker(bind=engine))
 
@@ -70,7 +70,7 @@ class Item(Base):
 
 class UserAuction(Base):
     __tablename__ = "userauctions"
-
+    __table_args__ = (Index('my_index', "lastUpdated", desc=True),) #ToDo: Make this work. Descending index please
     owner = Column(String, primary_key=True)
     realm_id = Column(Integer, ForeignKey("realms.id"), primary_key=True)
     realm = relationship("Realm")
