@@ -94,7 +94,7 @@ class UserAuction(Base):
 
 class Price(Base):
     __tablename__ = "prices"
-    __table_args__ = (schema.PrimaryKeyConstraint('realm_id','item_id','faction','day'),)
+    __table_args__ = (schema.PrimaryKeyConstraint('realm_id','item_id','day'),)
     #(Index("price_finder", 'day', 'realm_id', 'item_id', 'faction'),)
     
     #id = Column(Integer, primary_key=True)

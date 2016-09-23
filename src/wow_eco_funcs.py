@@ -1,41 +1,41 @@
 
 
 def handle_auc(auctions, db_realm, session):
-	db_realm.action_count = 0
-	auc = auctions["auctions"]		# key removed
-	db_realm.auction_count+=len(auc)
-    _json_path = "auction_cache/%s.json"%(db_realm.slug)		# key removed
+    db_realm.action_count = 0
+    auc = auctions["auctions"]      # key removed
+    db_realm.auction_count+=len(auc)
+    _json_path = "auction_cache/%s.json"%(db_realm.slug)        # key removed
 
-	log("   - Found %s auctions"%len(auc))
-	auc_ids = nparray([adata['auc'] for adata in auc])
+    log("   - Found %s auctions"%len(auc))
+    auc_ids = nparray([adata['auc'] for adata in auc])
 
-	if os.path.exists(_json_path):
-		with open(_json_path, "r") as pd:
-			try:
-				previous_ids = nparray(json.load(pd))
-			except ValueError:
-				log("	- Error decoding JSON document %s! Removing"%_json_path)
-				os.remove(_json_path)
-			else:
-				tempids = list(set(auc_ids) - set(previous_ids))
-				if len(temp_ids):
-					new_ids = nparray(temp_ids)
-				else:
-					new ids = []
-				del previous_ids, temp_ids
-				log("	- Found %s new auctionsl"%len(new_ids))
+    if os.path.exists(_json_path):
+        with open(_json_path, "r") as pd:
+            try:
+                previous_ids = nparray(json.load(pd))
+            except ValueError:
+                log("   - Error decoding JSON document %s! Removing"%_json_path)
+                os.remove(_json_path)
+            else:
+                tempids = list(set(auc_ids) - set(previous_ids))
+                if len(temp_ids):
+                    new_ids = nparray(temp_ids)
+                else:
+                    new_ids = []
+                del previous_ids, temp_ids
+                log("   - Found %s new auctionsl"%len(new_ids))
                 new_item_ids = nparray([t["item"] for t in auc if t["auc"] in new_ids])
                 log("    - Created item array")
                 if not len(new_item_ids):
                     log("     - Passing...")
-                    return		# changed from continue
+                    return      # changed from continue
 
                 query = session.query(models.Price).filter(models.Price.day==datetime.datetime.now().date()) \
                                                                .filter(models.Price.realm==db_realm) \
                                                                .filter(models.Price.item_id.in_(new_item_ids))
                                                                # .filter(models.Price.faction==key)
                                                                
-                price_objects = {p.item_id:p for p in query.all()}	# dict comprehension
+                price_objects = {p.item_id:p for p in query.all()}  # dict comprehension
                 to_add = []
                 
                 del new_item_ids
@@ -58,7 +58,7 @@ def handle_auc(auctions, db_realm, session):
                             else:
                                 #price = models.Price()
                                 price_db = models.Price(datetime.datetime.now().date(), db_realm, auction["item"],
-                                                        0, 0, 0)	# key component removed from instantiation
+                                                        0, 0, 0)    # key component removed from instantiation
                                 price_objects[auction["item"]] = price_db
                                 
                             price_db.quantity+=auction["quantity"]
@@ -137,7 +137,6 @@ def handle_auc(auctions, db_realm, session):
                     session.commit()
                 except Exception:
                     session.rollback()                             
-
 
     else:
         log("    - No previous dump found, dumping current record.")
