@@ -56,20 +56,20 @@ class BattleNetApi(object):
         return d
     
     def get_item(self, id):
-        r = self.get_content("http://eu.battle.net/api/wow/item/%s"%id)
+        r = self.get_content("https://eu.api.battle.net/wow/item/%s?locale=en_GB&apikey=ncfqkhsgnytx86tscw8n8z2e5bmduauj"%id)
         if not r:
             return None
         
         return Item(r)
     
     def get_realms(self):
-        r = self.get_content("http://eu.battle.net/api/wow/realm/status")
+        r = self.get_content("https://eu.api.battle.net/wow/realm/status?locale=en_GB&apikey=ncfqkhsgnytx86tscw8n8z2e5bmduauj")
         if not r: 
             return None
         return [Realm(d) for d in r["realms"]]
     
     def get_auction(self, realm, last_timestamp):
-        r = self.get_content("http://eu.battle.net/api/wow/auction/data/"+realm)
+        r = self.get_content("https://eu.api.battle.net/wow/auction/data/"+realm+"?locale=en_GB&apikey=ncfqkhsgnytx86tscw8n8z2e5bmduauj")
         if r == None: 
             raise Exception()
         d = r["files"][0]

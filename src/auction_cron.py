@@ -8,6 +8,7 @@ while not lock.i_am_locking():
     try:
         print "Getting the lock..."
         lock.acquire(timeout=60)
+        print "Lock acquired"
     except lockfile.LockTimeout:
         print "Could not get the lock in 60 seconds, exiting."
         sys.exit(1)
@@ -21,6 +22,7 @@ import json
 import datetime
 from numpy import array as nparray
 from sqlalchemy import exc
+from pprint import pprint as pp
 #from sqlalchemy.orm.exc import NoResultFound
 
 #logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
@@ -239,9 +241,10 @@ if __name__ == "__main__":
         log("Getting realm list...")
         realms = api.get_realms()
         log("Retrieved %s realms, sending to the realm pool"%len(realms))
-        if "--debug" in sys.argv:
-            HandleRealm([x for x in realms if x.slug == "deathwing"][0])
-        else:
-            realm_pool.map(HandleRealm, realms)
+        print [realms[i].name for i in range(len(realms))]
+        # if "--debug" in sys.argv:
+        #     HandleRealm([x for x in realms if x.slug == "deathwing"][0])
+        # else:
+        #     realm_pool.map(HandleRealm, realms)
     finally:
         lock.release()

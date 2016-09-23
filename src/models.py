@@ -7,7 +7,7 @@ import datetime
 import time
 import sys
 
-engine = create_engine("postgresql+psycopg2://wowauction:password@localhost:5432/wow_auctions",isolation_level="REPEATABLE_READ", echo=True)#"--debug" in sys.argv)
+engine = create_engine("postgresql+psycopg2://diamantan:postpass@localhost:5432/wow_economy",isolation_level="REPEATABLE_READ", echo=True)#"--debug" in sys.argv)
 Base = declarative_base()
 Session = ScopedSession(sessionmaker(bind=engine))
 
@@ -126,4 +126,5 @@ class Price(Base):
         self.faction = faction
         self.average_counter = 0
 
-Base.metadata.create_all(engine)
+if __name__ == '__main__':
+    Base.metadata.create_all(engine)
