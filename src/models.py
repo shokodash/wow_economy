@@ -112,18 +112,18 @@ class Price(Base):
     quantity = Column(Integer) # Number of items seen this day
     average_counter = Column(Integer)
     
-    faction = Column(Enum("neutral","horde","alliance", name="faction_enum"), primary_key=True) # Neutral, Horde, Alliance
+    # faction = Column(Enum("neutral","horde","alliance", name="faction_enum"), primary_key=True) # Removed in later patches
     
     
     
-    def __init__(self, day, realm, item, buyout, bid, quantity, faction):
+    def __init__(self, day, realm, item, buyout, bid, quantity):
         self.day = day
         self.realm = realm
         self.item_id = item
         self.buyout = buyout
         self.bid = bid
         self.quantity = quantity
-        self.faction = faction
+        # self.faction = faction    # Removed in later patches
         self.average_counter = 0
 
 if __name__ == '__main__':

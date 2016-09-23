@@ -242,9 +242,9 @@ if __name__ == "__main__":
         realms = api.get_realms()
         log("Retrieved %s realms, sending to the realm pool"%len(realms))
         print [realms[i].name for i in range(len(realms))]
-        # if "--debug" in sys.argv:
-        #     HandleRealm([x for x in realms if x.slug == "deathwing"][0])
-        # else:
-        #     realm_pool.map(HandleRealm, realms)
+        if "--debug" in sys.argv:
+            HandleRealm([x for x in realms if x.slug == "deathwing"][0])
+        else:
+            realm_pool.map(HandleRealm, realms)
     finally:
         lock.release()
