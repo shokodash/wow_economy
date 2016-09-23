@@ -1,3 +1,5 @@
+Clone from https://github.com/orf/wow_economy.git
+
 This is a site that tracks the average price of World of Warcraft auction items.
 The cron job pulls the auctions and processes them for the frontend.
 
