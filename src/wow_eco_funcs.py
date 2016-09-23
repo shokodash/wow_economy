@@ -1,4 +1,22 @@
 
+import lockfile
+import sys
+import models
+import battlenet
+import time
+import os
+import multiprocessing.pool
+import json
+import datetime
+from numpy import array as nparray
+from sqlalchemy import exc
+
+
+
+def log(message):
+    # Quick and dirty.
+    #sys.stdout.write("%s: %s\n"%(time.asctime(), message))
+    print (u"%s: %s"%(time.asctime(), message)).encode("utf-8")
 
 def handle_auc(auctions, db_realm, session):
     db_realm.action_count = 0
