@@ -10,3 +10,4 @@ src/auction_cache
 *.class
 *.pyc
 *.pyo
+*.lock
