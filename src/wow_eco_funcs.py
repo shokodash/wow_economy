@@ -18,7 +18,7 @@ def log(message):
     #sys.stdout.write("%s: %s\n"%(time.asctime(), message))
     print (u"%s: %s"%(time.asctime(), message)).encode("utf-8")
 
-def handle_auc(auctions, db_realm, session):
+def handle_auc(auctions, db_realm, session, api):
     db_realm.action_count = 0
     auc = auctions["auctions"]      # key removed
     db_realm.auction_count+=len(auc)
@@ -35,7 +35,7 @@ def handle_auc(auctions, db_realm, session):
                 log("   - Error decoding JSON document %s! Removing"%_json_path)
                 os.remove(_json_path)
             else:
-                tempids = list(set(auc_ids) - set(previous_ids))
+                temp_ids = list(set(auc_ids) - set(previous_ids))
                 if len(temp_ids):
                     new_ids = nparray(temp_ids)
                 else:

@@ -74,7 +74,7 @@ def HandleRealm(realm):
     log("  - LastModified: %s"%(time.ctime(lastModified / 1000)))
     db_realm.auction_count = 0
             
-    wow_eco_funcs.handle_auc(auctions, db_realm, session)   # the big function instead of for key in alliance, horde, neutral  
+    wow_eco_funcs.handle_auc(auctions, db_realm, session, api)   # the big function instead of for key in alliance, horde, neutral  
 
     db_realm.lastupdate = lastModified / 1000
     session.add(db_realm)
@@ -87,19 +87,22 @@ if __name__ == "__main__":
         if not os.path.exists("auction_cache"):
             os.mkdir("auction_cache")
 
-        log("Spinning up thread pools...")
-        realm_pool = multiprocessing.pool.ThreadPool(4)
 
         api = battlenet.BattleNetApi(log)
 
         log("Getting realm list...")
         realms = api.get_realms()
         log("Retrieved %s realms, sending to the realm pool"%len(realms))
-        print [realms[i].name for i in range(len(realms))]
+        print [realms[i].name for i in range(10)]
         print len(realms)
-        if "--debug" in sys.argv:
-            HandleRealm([x for x in realms if x.slug == "deathwing"][0])
-        else:
-            realm_pool.map(HandleRealm, realms[:3])
+        for i in range(10):
+            HandleRealm(realms[i])
+            
+        # log("Spinning up thread pools...")
+        # realm_pool = multiprocessing.pool.ThreadPool(4)
+        # if "--debug" in sys.argv:
+        #     HandleRealm([x for x in realms if x.slug == "deathwing"][0])
+        # else:
+        #     realm_pool.map(HandleRealm, realms[:10])
     finally:
         lock.release()
