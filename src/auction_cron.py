@@ -93,9 +93,9 @@ if __name__ == "__main__":
         log("Getting realm list...")
         realms = api.get_realms()
         log("Retrieved %s realms, sending to the realm pool"%len(realms))
-        print [realms[i].name for i in range(10)]
+        print [realms[i].name for i in range(3)]
         print len(realms)
-        for i in range(10):
+        for i in range(3):
             HandleRealm(realms[i])
             
         # log("Spinning up thread pools...")

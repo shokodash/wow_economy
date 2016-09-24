@@ -43,7 +43,7 @@ class Item(Base):
     
     id = Column(Integer, primary_key=True)
     name = Column(String, index=True) #ToDo: Make this a lowered index
-    icon = Column(String(250))
+    # icon = Column(String(250))
     description = Column(String)
     
     buyprice = Column(BigInteger)
@@ -51,10 +51,10 @@ class Item(Base):
     quality = Column(Integer)
     level = Column(Integer)
 
-    def __init__(self, id, name, icon, description, buyprice, sellprice, quality, level):
+    def __init__(self, id, name, description, buyprice, sellprice, quality, level):
         self.id = id
         self.name = name
-        self.icon = icon
+        # self.icon = icon
         self.description = description
         self.sellprice = sellprice
         self.buyprice = buyprice
@@ -62,10 +62,10 @@ class Item(Base):
         self.level = level
         
     def __repr__(self):
-        return "<Item(%s,%s)>"%(self.name, self.icon)
+        return "<Item(%s)>"%(self.name)
     
-    def get_icon(self):
-        return "http://us.media.blizzard.com/wow/icons/56/%s.jpg"%self.icon
+    # def get_icon(self):
+    #     return "http://us.media.blizzard.com/wow/icons/56/%s.jpg"%self.icon
     
 
 class UserAuction(Base):
