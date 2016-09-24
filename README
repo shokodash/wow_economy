@@ -1,5 +1,8 @@
 Clone from https://github.com/orf/wow_economy.git
 
+First time run models.py
+After that run auction_cron.py
+
 This is a site that tracks the average price of World of Warcraft auction items.
 The cron job pulls the auctions and processes them for the frontend.
 
