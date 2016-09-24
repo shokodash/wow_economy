@@ -1,14 +1,6 @@
+import flask
 
+d = {3: "boom", "four": "dam"}
 
-
-l = list(range(10))
-
-print l
-
-print l[0:3]
-
-print l[:3]
-
-print l[3]
-
-print l[:3]
+if 'four' in d:
+	print 'yo'

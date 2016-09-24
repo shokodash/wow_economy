@@ -15,11 +15,15 @@ class Item(object):
     def __init__(self, data):
         self._auctionID = None
         
+        if "icon" in data:
+            setattr(self, "icon", data["icon"])
+        else:
+            setattr(self, "icon", "inv_engineering_sonicenvironmentenhancer")
         for x in ("name", "description", "buyPrice", "sellPrice", "quality", "itemLevel"):
             setattr(self, x, data[x])
     
     def __repr__(self):
-        return "<Item(%s,%s)>"%(self.name, self.quality)
+        return "<Item(%s,%s,%s)>"%(self.name, self.icon, self.quality)
     
 class UnavailableError(Exception):
     pass
