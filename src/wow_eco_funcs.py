@@ -122,7 +122,7 @@ def handle_auc(auctions, db_realm, session, api):
                 del uauction_objects
                 del uauction                                            # Cleaning the session
                 
-                item_ids = set([auction_data["item"] for auction_data in auc])      # Another go throught the whole list of jsons to gather all item ids
+                item_ids = set([auction_data["item"] for auction_data in auc])      # Another go through the whole list of jsons to gather all item ids
                 
                 sesquery = session.query(models.Item.id).filter(models.Item.id.in_(item_ids)).all()     # Item ids(Integers) with item ids that are present both in this snapshot and in databse
                 items_that_dont_exist = item_ids - set([ o[0] for o in sesquery ])                      # loop over the integers, cannot understand [0]
