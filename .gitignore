@@ -12,3 +12,4 @@ auction_cache
 *.pyc
 *.pyo
 *.lock
+src/cronlog

@@ -1,6 +1,5 @@
-import flask
 
-d = {3: "boom", "four": "dam"}
 
-if 'four' in d:
-	print 'yo'
+a = 3
+
+print a[0]
