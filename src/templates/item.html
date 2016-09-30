@@ -3,16 +3,36 @@
 {% block titleaddition %}- {{ name }}{% endblock %}
 
 {% block head %}
-    <script type='text/javascript' src='http://www.google.com/jsapi'></script>
+    <script type='text/javascript' src='https://www.gstatic.com/charts/loader.js'></script>
     <script type="text/javascript">
-        google.load('visualization', '1', {'packages':['annotatedtimeline']});
+    google.charts.load('current', {packages: ['corechart', 'line']});
+    google.charts.setOnLoadCallback(drawBackgroundColor);
 
-        google.setOnLoadCallback(function(){
-                    var data = new google.visualization.DataTable();
+    function drawBackgroundColor() {
+      var data = new google.visualization.DataTable();
+      data.addColumn('date', 'days');
+      data.addColumn('number', 'Realm');
+      var slavadata = [];
+    {% for price in prices %}
+        var dat = new Date({{price.day.year}}, {{price.day.month}}-1, {{price.day.day}});
+        slavadata.push([dat, {{price.quantity}}]);
+    {% endfor %}
+      console.log(slavadata);
+      data.addRows(slavadata);
 
-                }
-        )
+      var options = {
+        hAxis: {
+          title: 'Time'
+        },
+        vAxis: {
+          title: 'Quantity'
+        },
+        backgroundColor: '#f1f8e9'
+      };
 
+      var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+      chart.draw(data, options);
+    }
     </script>
 {% endblock %}
 
@@ -25,4 +45,5 @@
         ItemID: {{ item.id }}
         <br /><br />
     {% endfor %}
+    <div id="chart_div"></div>
 {% endblock %}

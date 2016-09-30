@@ -45,7 +45,7 @@ class BattleNetApi(object):
             return None
         
         try:
-            d = json.loads(r.read(), encoding="utf-8")#.encode("utf-8"))
+            d = json.loads(r.read(), encoding="utf-8")          #   <type 'dict'>
         except Exception:
             self.logger("Invalid json detected @ %s"%url)
             self.logger("Status: %s, Final URL: %s"%(r.code, r.geturl()))
@@ -73,11 +73,10 @@ class BattleNetApi(object):
         return [Realm(d) for d in r["realms"]]
     
     def get_auction(self, realm, last_timestamp):
-        r = self.get_content("https://eu.api.battle.net/wow/auction/data/"+realm+"?locale=en_GB&apikey=ncfqkhsgnytx86tscw8n8z2e5bmduauj")
+        r = self.get_content("https://eu.api.battle.net/wow/auction/data/"+realm+"?locale=en_GB&apikey=ncfqkhsgnytx86tscw8n8z2e5bmduauj") # <type 'dict'>
         if r == None: 
             raise Exception()
-        d = r["files"][0]
-        
+        d = r["files"][0]                               #  <type 'dict'>
         if (d["lastModified"] / 1000) > last_timestamp:
             # We have a hit, fetch and return
             return d["lastModified"], self.get_content(d["url"])

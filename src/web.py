@@ -38,17 +38,18 @@ def view_items():
     total_items = g.db.query(models.Item).count()
     return render_template("itemsearch.html", count=total_items)
 
-
 @app.route("/item/<name>")
 def view_item(name):
-    items = g.db.query(models.Item).filter(models.Item.name == name).order_by(models.Item.quality.desc()).all()
+    items = g.db.query(models.Item).filter(models.Item.name == name).\
+                        order_by(models.Item.quality.desc()).all() # list of <class 'models.Item'>
     if not len(items):
         abort(404)
+    prices = g.db.query(models.Price).filter(models.Price.item_id == items[0].id).\
+                filter(models.Price.realm_id==1).order_by(models.Price.day.asc()).all()     # # list of <class 'models.Item'>
+    return render_template("item.html", items=items, name=name, first_item=items[0], prices=prices)
 
-    return render_template("item.html", items=items, name=name, first_item=items[0])
 
-
-@app.route("/getprices/<int:id>/<server>/<faction>")
+@app.route("/getprices/<int:id>/<server>")
 def get_prices(id, server, faction):
     try:
         realm_id = g.db.query(models.Realm.id).filter(models.Realm.slug == server).one()

@@ -3,15 +3,16 @@
 
 import lockfile
 import sys
-lock = lockfile.LockFile("auctioncron.lock")
-while not lock.i_am_locking():
-    try:
-        print "Getting the lock..."
-        lock.acquire(timeout=60)
-        print "Lock acquired"
-    except lockfile.LockTimeout:
-        print "Could not get the lock in 60 seconds, exiting."
-        sys.exit(1)
+if __name__ == '__main__':
+    lock = lockfile.LockFile("auctioncron.lock")
+    while not lock.i_am_locking():
+        try:
+            print "Getting the lock..."
+            lock.acquire(timeout=60)
+            print "Lock acquired"
+        except lockfile.LockTimeout:
+            print "Could not get the lock in 60 seconds, exiting."
+            sys.exit(1)
 
 import models
 import battlenet
@@ -35,11 +36,12 @@ def log(message):
         
 
 def HandleRealm(realm):
-    api = battlenet.BattleNetApi(log)
+    api = battlenet.BattleNetApi(log)                               # <class 'battlenet.BattleNetApi'> 
+        # api.logger = log              
     
     log("Connecting to the database...")
     session = models.Session()
-    log("Connection successful. Parsing...")
+    log("Connection successful. ")
     
     log(" - Getting realm: %s"%realm)
     try:
@@ -49,7 +51,7 @@ def HandleRealm(realm):
         session.close()
         return None
     except Exception:
-        db_realm = models.Realm(realm.name, realm.slug)
+        db_realm = models.Realm(realm.name, realm.slug)         # db_realm.lastupdate = 0
         session.add(db_realm)
         session.commit()
     
@@ -93,16 +95,17 @@ if __name__ == "__main__":
         log("Getting realm list...")
         realms = api.get_realms()
         log("Retrieved %s realms, sending to the realm pool"%len(realms))
-        print [realms[i].name for i in range(3)]
-        print len(realms)
-        for i in range(3):
-            HandleRealm(realms[i])
+        nrealms = 6
+        print [realms[i].name for i in range(nrealms)]
+        # print len(realms)
+        # for i in range(3):
+        #     HandleRealm(realms[i])
             
-        # log("Spinning up thread pools...")
-        # realm_pool = multiprocessing.pool.ThreadPool(4)
-        # if "--debug" in sys.argv:
-        #     HandleRealm([x for x in realms if x.slug == "deathwing"][0])
-        # else:
-        #     realm_pool.map(HandleRealm, realms[:10])
+        log("Spinning up thread pools...")
+        realm_pool = multiprocessing.pool.ThreadPool(4)
+        if "--debug" in sys.argv:
+            HandleRealm([x for x in realms if x.slug == "deathwing"][0])
+        else:
+            realm_pool.map(HandleRealm, realms[:nrealms])
     finally:
         lock.release()

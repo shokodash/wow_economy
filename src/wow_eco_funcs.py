@@ -19,13 +19,13 @@ def log(message):
     print (u"%s: %s"%(time.asctime(), message)).encode("utf-8")
 
 def handle_auc(auctions, db_realm, session, api):
-    db_realm.action_count = 0       # realm specific counter that increments as auctions appear
-    auc = auctions["auctions"]      # List of jsons, each json is an auction listing(auc, item, owner, bit, bouyout etc.)
+    db_realm.action_count = 0                                   # Int - realm specific counter that increments as auctions appear
+    auc = auctions["auctions"]                                  # List of jsons, each json is an auction listing(auc, item, owner, bit, bouyout etc.)
     db_realm.auction_count+=len(auc)
     _json_path = "auction_cache/%s.json"%(db_realm.slug)        # string refering to the json that contains the auctions ids(auc["auc"])
 
     log("   - Found %s auctions"%len(auc))
-    auc_ids = nparray([adata['auc'] for adata in auc])          # nparray of all auction ids for the snapshot
+    auc_ids = nparray([adata['auc'] for adata in auc])          # <type 'numpy.ndarray'>
 
     if os.path.exists(_json_path):
         with open(_json_path, "r") as pd:                       # json object containing auction ids from the previous snapshot
