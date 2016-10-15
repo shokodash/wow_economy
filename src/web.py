@@ -8,17 +8,17 @@ from sqlalchemy import func, exists
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/wowp2')
 def index():
     realm_count = g.db.query(models.Realm).count()
     return render_template("index.html",realm_count=realm_count)
 
-@app.route('/realm')
+@app.route('/wowp2/realm')
 def realms():
     realms = g.db.query(models.Realm).order_by(models.Realm.name.asc()).all()
     return render_template("realms.html",realms=realms)
 
-@app.route("/realm/<realm>")
+@app.route("/wowp2/realm/<realm>")
 def view_realm(realm):
     try:
         realm = g.db.query(models.Realm).filter(models.Realm.slug == realm).one()
@@ -33,12 +33,12 @@ def view_realm(realm):
     return render_template("realm.html", realm=realm, popular_items=most_popular_items, names=item_name_dict)
 
 
-@app.route("/item")
+@app.route("/wowp2/item")
 def view_items():
     total_items = g.db.query(models.Item).count()
     return render_template("itemsearch.html", count=total_items)
 
-@app.route("/item/<name>")
+@app.route("/wowp2/item/<name>")
 def view_item(name):
     items = g.db.query(models.Item).filter(models.Item.name == name).\
                         order_by(models.Item.quality.desc()).all() # list of <class 'models.Item'>
@@ -49,7 +49,7 @@ def view_item(name):
     return render_template("item.html", items=items, name=name, first_item=items[0], prices=prices)
 
 
-@app.route("/getprices/<int:id>/<server>")
+@app.route("/wowp2/getprices/<int:id>/<server>")
 def get_prices(id, server, faction):
     try:
         realm_id = g.db.query(models.Realm.id).filter(models.Realm.slug == server).one()
@@ -66,7 +66,7 @@ def get_prices(id, server, faction):
                    data=[((p.day.year, p.day.month, p.day.day), p.bid) for p in prices])
 
 
-@app.route("/user")
+@app.route("/wowp2/user")
 def latestusers():
     latest_users = g.db.query(models.UserAuction).order_by(models.UserAuction.lastUpdated.desc()).limit(10).all()
 
